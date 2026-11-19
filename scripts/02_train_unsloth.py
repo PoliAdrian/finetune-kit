@@ -113,11 +113,29 @@ def main() -> None:
     def format_chat(batch: dict) -> dict:
         texts = []
         for msgs in batch["messages"]:
-            text = tokenizer.apply_chat_template(
-                msgs,
-                tokenize=False,
-                add_generation_prompt=False,
-            )
+            try:
+                text = tokenizer.apply_chat_template(
+                    msgs,
+                    tokenize=False,
+                    add_generation_prompt=False,
+                )
+            except Exception:
+                # Fallback for chat templates that don't accept a 'system' role directly
+                merged = []
+                sys_buf = ""
+                for m in msgs:
+                    if m["role"] == "system":
+                        sys_buf += m["content"] + "\n\n"
+                    elif m["role"] == "user" and sys_buf:
+                        merged.append({"role": "user", "content": sys_buf + m["content"]})
+                        sys_buf = ""
+                    else:
+                        merged.append(m)
+                text = tokenizer.apply_chat_template(
+                    merged,
+                    tokenize=False,
+                    add_generation_prompt=False,
+                )
             texts.append(text)
         return {"text": texts}
 
