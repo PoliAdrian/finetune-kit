@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ActionRouterCall",
+  "description": "Structured JSON call emitted by the fine-tuned small model. Adapt this schema to your hackathon domain.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action", "target", "filters"],
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "count_elements",
+        "list_elements",
+        "measure_area",
+        "check_compliance",
+        "unsupported"
+      ],
+      "description": "Deterministic backend operation to execute."
+    },
+    "target": {
+      "type": "string",
+      "description": "Element or room category from the available context menu (or 'none' if unsupported)."
+    },
+    "filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "floor": {
+          "type": ["string", "null"],
+          "description": "Specific floor/level if mentioned (e.g. 'floor_1', 'ground'), else null."
+        },
+        "zone": {
+          "type": ["string", "null"],
+          "description": "Specific apartment, room, or zone if mentioned, else null."
+        }
+      },
+      "required": ["floor", "zone"]
+    }
+  }
+}
