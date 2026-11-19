@@ -70,11 +70,13 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    # Import heavy GPU libs only when running training
+    # Import heavy GPU libs only when running training (unsloth must come first)
+    from unsloth import FastLanguageModel  # noqa: I001
+    import dataclasses
+
     import torch
     from datasets import load_dataset
     from trl import SFTConfig, SFTTrainer
-    from unsloth import FastLanguageModel
 
     load_in_4bit = args.mode == "lora"
     full_finetuning = args.mode == "full"
@@ -142,31 +144,37 @@ def main() -> None:
     ds = ds.map(format_chat, batched=True, remove_columns=ds["train"].column_names)
 
     use_bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+    cfg_kwargs = dict(
+        output_dir=str(args.output_dir),
+        dataset_text_field="text",
+        max_length=args.max_seq_len,
+        num_train_epochs=args.epochs,
+        per_device_train_batch_size=args.batch_size,
+        gradient_accumulation_steps=args.grad_accum,
+        learning_rate=lr,
+        lr_scheduler_type="cosine",
+        weight_decay=0.01,
+        logging_steps=20,
+        eval_strategy="epoch" if "validation" in ds else "no",
+        save_strategy="epoch",
+        bf16=use_bf16,
+        fp16=not use_bf16,
+        optim="adamw_8bit" if args.mode == "lora" else "adamw_torch",
+        seed=42,
+        report_to="none",
+    )
+    # Transformers >=5 removed `warmup_ratio` (a float `warmup_steps` < 1 is a ratio).
+    cfg_fields = {f.name for f in dataclasses.fields(SFTConfig)}
+    if "warmup_ratio" in cfg_fields:
+        cfg_kwargs["warmup_ratio"] = 0.05
+    else:
+        cfg_kwargs["warmup_steps"] = 0.05
     trainer = SFTTrainer(
         model=model,
         processing_class=tokenizer,
         train_dataset=ds["train"],
         eval_dataset=ds.get("validation"),
-        args=SFTConfig(
-            output_dir=str(args.output_dir),
-            dataset_text_field="text",
-            max_length=args.max_seq_len,
-            num_train_epochs=args.epochs,
-            per_device_train_batch_size=args.batch_size,
-            gradient_accumulation_steps=args.grad_accum,
-            learning_rate=lr,
-            lr_scheduler_type="cosine",
-            warmup_ratio=0.05,
-            weight_decay=0.01,
-            logging_steps=20,
-            eval_strategy="epoch" if "validation" in ds else "no",
-            save_strategy="epoch",
-            bf16=use_bf16,
-            fp16=not use_bf16,
-            optim="adamw_8bit" if args.mode == "lora" else "adamw_torch",
-            seed=42,
-            report_to="none",
-        ),
+        args=SFTConfig(**cfg_kwargs),
     )
 
     print("Starting training...")
