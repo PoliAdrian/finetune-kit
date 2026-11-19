@@ -1,0 +1,11 @@
+# Local data generation, evaluation & CPU inference
+pydantic>=2.7.0
+jsonschema>=4.22.0
+fastapi>=0.115.0
+uvicorn>=0.30.0
+httpx>=0.27.0
+tqdm>=4.66.0
+
+# Optional: local GGUF CPU inference (compile/install wheel for your OS)
+# pip install llama-cpp-python
+llama-cpp-python>=0.3.0
