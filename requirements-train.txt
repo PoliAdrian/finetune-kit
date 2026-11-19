@@ -1,0 +1,12 @@
+# GPU Training dependencies (Google Colab / RunPod / Modal / Verda / Local CUDA)
+# Recommended install on Colab/Linux CUDA:
+#   pip install --no-deps unsloth
+#   pip install -r requirements-train.txt
+unsloth>=2025.3.0
+trl>=0.12.0
+datasets>=3.0.0
+transformers>=4.49.0
+accelerate>=1.0.0
+peft>=0.14.0
+bitsandbytes>=0.45.0
+huggingface_hub>=0.27.0
