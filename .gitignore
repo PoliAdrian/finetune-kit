@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Datasets & trained artifacts (too large for git; push models to Hugging Face)
+data/*.jsonl
+models/
+outputs/
+checkpoints/
+wandb/
+huggingface_token
+
+# Local env / secrets
+.env
+.env.local
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+*.log
