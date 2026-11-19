@@ -1,0 +1,35 @@
+### Health check
+GET http://127.0.0.1:8000/health
+
+### Route query in Spanish (count)
+POST http://127.0.0.1:8000/route
+Content-Type: application/json
+
+{
+  "query": "¿Cuántas ventanas hay en la planta 1 en el piso A?",
+  "targets": ["window", "door", "toilet", "balcony", "kitchen"],
+  "floors": ["ground", "floor_1", "floor_2"],
+  "zones": ["apt_A", "apt_B", "lobby"]
+}
+
+### Route query in English (highlight / list)
+POST http://127.0.0.1:8000/route
+Content-Type: application/json
+
+{
+  "query": "show me all fire exits on ground floor",
+  "targets": ["fire_exit", "window", "door", "elevator"],
+  "floors": ["ground", "floor_1"],
+  "zones": ["north_wing", "south_wing", "lobby"]
+}
+
+### Out-of-scope query (should emit action = unsupported)
+POST http://127.0.0.1:8000/route
+Content-Type: application/json
+
+{
+  "query": "What will the weather be tomorrow in Helsinki?",
+  "targets": ["window", "door"],
+  "floors": ["ground", "floor_1"],
+  "zones": ["apt_A"]
+}
